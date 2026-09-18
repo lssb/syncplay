@@ -22,7 +22,7 @@
 -->
 
 # Syncplay
-![GitHub Actions build status](https://github.com/Syncplay/syncplay/workflows/Build/badge.svg)
+![GitHub Actions build status](https://github.com/lssb/syncplay/workflows/Build/badge.svg)
 
 Solution to synchronize video playback across multiple instances of mpv, VLC, MPC-HC, MPC-BE and mplayer2 over the Internet.
 
@@ -31,6 +31,25 @@ https://syncplay.pl
 
 ## Download
 https://syncplay.pl/download/
+
+## This fork (lssb-strm)
+
+This is a personal build of Syncplay 1.7.7 for watching **`.strm` libraries** (Emby / Jellyfin / NAS pointers) together. It does not replace upstream Syncplay; the official project remains at https://github.com/Syncplay/syncplay.
+
+Related report: [Syncplay/syncplay#807](https://github.com/Syncplay/syncplay/issues/807).
+
+### What changed
+
+- **Shared playlist identity.** mpv treats `.strm` as a playlist and reports the inner HTTP URL as the current file. This build keeps the `.strm` filename as the room identity for 25 seconds after open, so two people can each play their own NAS URL while staying on the same playlist item.
+- **Sidecar subtitles.** Syncplay starts mpv with a bundled `strm-sidecars.lua` (`--scripts-append`). Matching `.srt` / `.ass` files next to the `.strm` are loaded automatically. You do not need to change the mpv install.
+- **Server.** No server change. A 1.7.7 server is fine.
+- **About dialog.** Window title is `Syncplay v1.7.7 lssb-strm`. Help → About names **lssb** and **白小九日**.
+
+### 本次修改（中文）
+
+mpv 会把 `.strm` 展开成里面的 URL，Syncplay 会把它当成另一个文件，同名字幕也找不到。本 fork 做了两件事：房间里继续用 `.strm` 文件名（打开后 25 秒内完成绑定），启动 mpv 时带上内置脚本，从 `.strm` 所在目录加载同名字幕。服务端不用改。
+
+Windows 64 位便携包请到本仓库 [Actions](https://github.com/lssb/syncplay/actions) 下载 `Syncplay_1.7.7_x64_Portable`（工作流名：Build，分支 `strm-identity`）。
 
 ## What does it do
 
