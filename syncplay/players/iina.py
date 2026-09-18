@@ -78,6 +78,9 @@ class IinaPlayer(MpvPlayer):
         for key, value in constants.IINA_PROPERTIES.items():
             self._setProperty(key, value)
         self._listener.sendLine(["load-script", findResourcePath("syncplayintf.lua")])
+        sidecar = MpvPlayer.strmSidecarScriptPath()
+        if sidecar:
+            self._listener.sendLine(["load-script", sidecar])
         super()._preparePlayer()
 
     def _onFileUpdate(self):

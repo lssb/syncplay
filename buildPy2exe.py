@@ -718,6 +718,7 @@ guiIcons = glob('syncplay/resources/*.ico') + glob('syncplay/resources/*.png') +
 
 resources = [
     "syncplay/resources/syncplayintf.lua",
+    "syncplay/resources/strm-sidecars.lua",
     "syncplay/resources/license.rtf",
     "syncplay/resources/third-party-notices.txt"
 ]

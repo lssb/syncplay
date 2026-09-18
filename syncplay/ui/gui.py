@@ -12,7 +12,7 @@ from platform import python_version
 
 from twisted.internet import task
 
-from syncplay import utils, constants, version, revision, release_number
+from syncplay import utils, constants, version, revision, release_number, custom_build_note
 from syncplay.messages import getMessage
 from syncplay.ui.consoleUI import ConsoleUI
 from syncplay.utils import resourcespath
@@ -163,6 +163,11 @@ class AboutDialog(QtWidgets.QDialog):
             "<p><center>" + getMessage("about-dialog-release").format(versionExtString, release_number) +
             "<br />Python " + python_version() + " - " + __binding__ + " " + __binding_version__ +
             " - Qt " + __qt_version__ + "</center></p>")
+        noteLabel = None
+        if custom_build_note:
+            noteLabel = QtWidgets.QLabel(
+                "<center><p>" + custom_build_note + "</p></center>")
+            noteLabel.setWordWrap(True)
         licenseLabel = QtWidgets.QLabel(
             "<center><p>Copyright &copy; 2012&ndash;2026 Syncplay</p><p>" +
             getMessage("about-dialog-license-text") + "</p></center>")
@@ -175,15 +180,20 @@ class AboutDialog(QtWidgets.QDialog):
         aboutLayout.addWidget(nameLabel, 3, 0, 1, 4)
         aboutLayout.addWidget(linkLabel, 4, 0, 1, 4)
         aboutLayout.addWidget(versionLabel, 5, 0, 1, 4)
-        aboutLayout.addWidget(licenseLabel, 6, 0, 1, 4)
+        nextRow = 6
+        if noteLabel:
+            aboutLayout.addWidget(noteLabel, nextRow, 0, 1, 4)
+            nextRow += 1
+        aboutLayout.addWidget(licenseLabel, nextRow, 0, 1, 4)
+        nextRow += 1
         licenseButton = QtWidgets.QPushButton(getMessage("about-dialog-license-button"))
         licenseButton.setAutoDefault(False)
         licenseButton.clicked.connect(self.openLicense)
-        aboutLayout.addWidget(licenseButton, 7, 0, 1, 2)
+        aboutLayout.addWidget(licenseButton, nextRow, 0, 1, 2)
         dependenciesButton = QtWidgets.QPushButton(getMessage("about-dialog-dependencies"))
         dependenciesButton.setAutoDefault(False)
         dependenciesButton.clicked.connect(self.openDependencies)
-        aboutLayout.addWidget(dependenciesButton, 7, 2, 1, 2)
+        aboutLayout.addWidget(dependenciesButton, nextRow, 2, 1, 2)
         aboutLayout.setVerticalSpacing(10)
         aboutLayout.setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
         self.setSizeGripEnabled(False)

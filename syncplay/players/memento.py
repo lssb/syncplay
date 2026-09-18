@@ -4,6 +4,7 @@ from syncplay import constants
 
 from syncplay.players.mpv import MpvPlayer
 from syncplay.utils import findResourcePath, playerPathExists
+from syncplay.strm import add_strm_sidecar_script
 
 
 class MementoPlayer(MpvPlayer):
@@ -52,6 +53,7 @@ class MementoPlayer(MpvPlayer):
     def getStartupArgs(userArgs):
         args = constants.MPV_ARGS
         args["scripts"] = findResourcePath("syncplayintf.lua")
+        add_strm_sidecar_script(args)
         if userArgs:
             for argToAdd in userArgs:
                 if argToAdd.startswith("--"):

@@ -14,6 +14,7 @@ from syncplay.players.basePlayer import BasePlayer
 from syncplay.utils import getRuntimeDir, isURL, findResourcePath
 from syncplay.utils import isMacOS, isWindows, isASCII
 from syncplay.utils import playerPathExists
+from syncplay.strm import add_strm_sidecar_script
 from syncplay.vendor.python_mpv_jsonipc.python_mpv_jsonipc import MPV
 
 class MpvPlayer(BasePlayer):
@@ -54,9 +55,17 @@ class MpvPlayer(BasePlayer):
         return MpvPlayer(client, MpvPlayer.getExpandedPath(playerPath), filePath, args)
 
     @staticmethod
+    def strmSidecarScriptPath():
+        sidecar = findResourcePath("strm-sidecars.lua")
+        if os.path.isfile(sidecar):
+            return sidecar
+        return None
+
+    @staticmethod
     def getStartupArgs(userArgs):
         args = constants.MPV_ARGS
         args["script"] = findResourcePath("syncplayintf.lua")
+        add_strm_sidecar_script(args)
         if userArgs:
             for argToAdd in userArgs:
                 if argToAdd.startswith('--'):

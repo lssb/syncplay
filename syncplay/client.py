@@ -38,6 +38,7 @@ except:
     pass
 
 from syncplay import utils, constants, version
+from syncplay.strm import StrmIdentityTracker
 from syncplay.constants import PRIVACY_SENDHASHED_MODE, PRIVACY_DONTSEND_MODE, \
     PRIVACY_HIDDENFILENAME
 from syncplay.messages import getMissingStrings, getMessage, isNoOSDMessage
@@ -101,6 +102,7 @@ class SyncplayClient(object):
         self.lastRewindTime = None
         self.lastUpdatedFileTime = None
         self.lastAdvanceTime = None
+        self.strmIdentity = StrmIdentityTracker()
         self.fileOpenBeforeChangingPlaylistIndex = None
         self.waitingToLoadNewfile = False
         self.waitingToLoadNewfileSince = None
@@ -562,18 +564,20 @@ class SyncplayClient(object):
     def updateFile(self, filename, duration, path):
         self.lastUpdatedFileTime = time.time()
         newPath = ""
-        if utils.isURL(path):
-            filename = path
         if not path:
             return
-        try:
-            size = os.path.getsize(path)
-        except:
+        filename, path, strmSize = self.strmIdentity.canonicalize(filename, path)
+        if strmSize is not None:
+            size = strmSize
+        else:
             try:
-                path = path.decode('utf-8')
                 size = os.path.getsize(path)
             except:
-                size = 0
+                try:
+                    path = path.decode('utf-8')
+                    size = os.path.getsize(path)
+                except:
+                    size = 0
         if not utils.isURL(path) and os.path.exists(path):
             self.fileSwitch.notifyUserIfFileNotInMediaDirectory(filename, path)
         filename, size = self.__executePrivacySettings(filename, size)
@@ -656,6 +660,7 @@ class SyncplayClient(object):
             self.playlist.loadPlaylistFromFile(filePath, resetPosition)
             return
 
+        self.strmIdentity.begin_open(filePath)
         self.playlist.openedFile()
         self._player.openFile(filePath, resetPosition)
         if resetPosition:
