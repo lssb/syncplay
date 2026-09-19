@@ -14,6 +14,12 @@ def is_strm_path(file_path):
     return os.path.splitext(path)[1].lower() == ".strm"
 
 
+def should_reopen_on_same_playlist_item(filename, current_path, reset_position):
+    if not reset_position:
+        return False
+    return is_strm_path(filename) or is_strm_path(current_path)
+
+
 def extra_open_ignore_time(file_path):
     """Extra seconds to ignore position sync after opening a slow-to-resolve file.
 

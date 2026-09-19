@@ -2,7 +2,12 @@ import os
 import unittest
 
 from syncplay.constants import STREAM_ADDITIONAL_IGNORE_TIME, STRM_RESOLVE_TIMEOUT
-from syncplay.strm import StrmIdentityTracker, decide_sidecar_load, extra_open_ignore_time
+from syncplay.strm import (
+    StrmIdentityTracker,
+    decide_sidecar_load,
+    extra_open_ignore_time,
+    should_reopen_on_same_playlist_item,
+)
 
 
 class FakeClock:
@@ -139,6 +144,35 @@ class SidecarLoadDecisionTest(unittest.TestCase):
         )
         self.assertEqual(action, "wait")
         self.assertIsNone(key)
+
+
+class SamePlaylistItemReopenTest(unittest.TestCase):
+    def test_same_strm_item_reopens_when_resetting(self):
+        self.assertTrue(
+            should_reopen_on_same_playlist_item(
+                "show S06E01.strm",
+                r"Z:\show S06E01.strm",
+                True,
+            )
+        )
+
+    def test_same_local_video_does_not_reopen(self):
+        self.assertFalse(
+            should_reopen_on_same_playlist_item(
+                "show.mkv",
+                r"D:\videos\show.mkv",
+                True,
+            )
+        )
+
+    def test_without_reset_does_not_reopen(self):
+        self.assertFalse(
+            should_reopen_on_same_playlist_item(
+                "show S06E01.strm",
+                r"Z:\show S06E01.strm",
+                False,
+            )
+        )
 
 
 class ExtraOpenIgnoreTimeTest(unittest.TestCase):

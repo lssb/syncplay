@@ -38,7 +38,7 @@ except:
     pass
 
 from syncplay import utils, constants, version
-from syncplay.strm import StrmIdentityTracker
+from syncplay.strm import StrmIdentityTracker, should_reopen_on_same_playlist_item
 from syncplay.constants import PRIVACY_SENDHASHED_MODE, PRIVACY_DONTSEND_MODE, \
     PRIVACY_HIDDENFILENAME
 from syncplay.messages import getMissingStrings, getMessage, isNoOSDMessage
@@ -1969,6 +1969,17 @@ class SyncplayPlaylist():
             if username is not None and self._client.userlist.currentUser.file and utils.sameFilename(filename, self._client.userlist.currentUser.file['name']):
                 if not self.queuedIndexFilename or utils.sameFilename(self.queuedIndexFilename, filename):
                     self._playlistIndex = index
+                    current_path = self._client.userlist.currentUser.file.get("path")
+                    if should_reopen_on_same_playlist_item(filename, current_path, resetPosition):
+                        path = self._client.fileSwitch.findFilepath(filename, highPriority=True) or current_path
+                        if path:
+                            self._client.openFile(path, resetPosition=True)
+                        else:
+                            self._client.rewindFile()
+                    elif resetPosition:
+                        self._client.rewindFile()
+                    if resetPosition:
+                        self._client.autoplayCheck()
                     return
                 self._ui.showDebugMessage(
                     "Not treating '{}' as already loaded because '{}' is still queued to load.".format(

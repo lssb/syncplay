@@ -1067,10 +1067,14 @@ class MainWindow(QtWidgets.QMainWindow):
 
     @needsClient
     def playlistItemClicked(self, item):
-        # TODO: Integrate into client.py code
-        filename = item.data()
-        if self._isTryingToChangeToCurrentFile(filename):
+        if hasattr(item, "row"):
+            index = item.row()
+        else:
+            index = self.playlist.row(item)
+        if self._syncplayClient.sharedPlaylistIsEnabled():
+            self._syncplayClient.playlist.changeToPlaylistIndex(index, resetPosition=True)
             return
+        filename = item.data()
         if isURL(filename):
             self._syncplayClient.openFile(filename, resetPosition=True)
         else:
