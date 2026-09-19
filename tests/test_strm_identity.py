@@ -2,7 +2,7 @@ import os
 import unittest
 
 from syncplay.constants import STRM_RESOLVE_TIMEOUT
-from syncplay.strm import StrmIdentityTracker
+from syncplay.strm import StrmIdentityTracker, decide_sidecar_load
 
 
 class FakeClock:
@@ -92,6 +92,43 @@ class StrmIdentityTrackerTest(unittest.TestCase):
         self.assertEqual(filename, "other.mkv")
         self.assertEqual(path, r"D:\videos\other.mkv")
         self.assertIsNone(size)
+
+
+class SidecarLoadDecisionTest(unittest.TestCase):
+    def test_first_start_on_strm_wrapper_waits(self):
+        action, key = decide_sidecar_load(
+            r"Z:\show S06E01.strm",
+            r"Z:\show S06E01.strm",
+            None,
+        )
+        self.assertEqual(action, "wait")
+        self.assertIsNone(key)
+
+    def test_inner_url_after_wrapper_loads(self):
+        action, key = decide_sidecar_load(
+            r"Z:\show S06E01.strm",
+            "http://nas/play/show.mkv",
+            None,
+        )
+        self.assertEqual(action, "load")
+        self.assertIsNotNone(key)
+
+    def test_same_inner_file_does_not_reload(self):
+        _, key = decide_sidecar_load(r"Z:\show S06E01.strm", "http://nas/a.mkv", None)
+        action, key2 = decide_sidecar_load(r"Z:\show S06E01.strm", "http://nas/a.mkv", key)
+        self.assertEqual(action, "skip")
+        self.assertEqual(key, key2)
+
+    def test_switching_to_another_strm_loads_again(self):
+        _, key = decide_sidecar_load(r"Z:\a.strm", "http://nas/a.mkv", None)
+        action, key2 = decide_sidecar_load(r"Z:\b.strm", "http://nas/b.mkv", key)
+        self.assertEqual(action, "load")
+        self.assertNotEqual(key, key2)
+
+    def test_url_without_playlist_path_waits(self):
+        action, key = decide_sidecar_load(None, "http://nas/a.mkv", None)
+        self.assertEqual(action, "wait")
+        self.assertIsNone(key)
 
 
 class MpvStartupScriptTest(unittest.TestCase):

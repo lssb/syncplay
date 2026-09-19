@@ -14,6 +14,23 @@ def is_strm_path(file_path):
     return os.path.splitext(path)[1].lower() == ".strm"
 
 
+def decide_sidecar_load(playlist_path, path, last_key):
+    """When to sub-add next to a .strm. Must stay in sync with strm-sidecars.lua.
+
+    mpv first opens the .strm itself as a playlist wrapper. sub-add at that
+    moment is discarded when the inner URL starts. Wait until path is the
+    inner media, then load once per (playlist_path, path).
+    """
+    if not is_strm_path(playlist_path):
+        return "wait", None
+    if not path or is_strm_path(path):
+        return "wait", None
+    key = "{}\0{}".format(playlist_path, path)
+    if key == last_key:
+        return "skip", key
+    return "load", key
+
+
 def _canonical_filename(path):
     if utils.isURL(path):
         return path

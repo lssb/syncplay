@@ -11,7 +11,7 @@ local SUB_EXTS = {
     idx = true, lrc = true, smi = true, sup = true,
 }
 
-local last_playlist_path = nil
+local last_loaded_key = nil
 
 local function basename(path)
     if not path then
@@ -54,15 +54,25 @@ local function is_matching_sidecar(strm_stem, filename)
     return file_stem:sub(1, #prefix) == prefix
 end
 
-local function load_sidecars(playlist_path)
-    if not playlist_path or playlist_path == last_playlist_path then
+local function is_strm(path)
+    return path and path:lower():match("%.strm$")
+end
+
+local function load_sidecars()
+    -- Same rules as syncplay.strm.decide_sidecar_load.
+    local playlist_path = mp.get_property("playlist-path")
+    local path = mp.get_property("path")
+    if not is_strm(playlist_path) then
         return
     end
-    if not playlist_path:lower():match("%.strm$") then
-        last_playlist_path = playlist_path
+    if not path or is_strm(path) then
+        msg.verbose("strm-sidecars: waiting for inner file")
         return
     end
-    last_playlist_path = playlist_path
+    local key = playlist_path .. "\0" .. path
+    if key == last_loaded_key then
+        return
+    end
 
     local dir = dirname(playlist_path)
     local strm_stem = stem(basename(playlist_path))
@@ -76,11 +86,14 @@ local function load_sidecars(playlist_path)
         return
     end
 
+    last_loaded_key = key
+
     local loaded = 0
     for _, filename in ipairs(files) do
         if is_matching_sidecar(strm_stem, filename) then
             local full = utils.join_path(dir, filename)
-            mp.commandv("sub-add", full, "auto")
+            local flags = (loaded == 0) and "select" or "auto"
+            mp.commandv("sub-add", full, flags)
             loaded = loaded + 1
             msg.info("strm-sidecars: added " .. full)
         end
@@ -90,9 +103,10 @@ local function load_sidecars(playlist_path)
     end
 end
 
-mp.observe_property("playlist-path", "string", function(_, value)
-    load_sidecars(value)
+mp.register_event("file-loaded", load_sidecars)
+mp.observe_property("playlist-path", "string", function()
+    load_sidecars()
 end)
-mp.register_event("start-file", function()
-    load_sidecars(mp.get_property("playlist-path"))
+mp.observe_property("path", "string", function()
+    load_sidecars()
 end)
