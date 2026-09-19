@@ -34,23 +34,23 @@ https://syncplay.pl/download/
 
 ## This fork (lssb-strm)
 
-This is a personal build of Syncplay 1.7.7.2 for watching **`.strm` libraries** (Emby / Jellyfin / NAS pointers) together. It does not replace upstream Syncplay; the official project remains at https://github.com/Syncplay/syncplay.
+This is a personal build of Syncplay 1.7.7.3 for watching **`.strm` libraries** (Emby / Jellyfin / NAS pointers) together. It does not replace upstream Syncplay; the official project remains at https://github.com/Syncplay/syncplay.
 
 Related report: [Syncplay/syncplay#807](https://github.com/Syncplay/syncplay/issues/807).
 
 ### What changed
 
 - **Shared playlist identity.** mpv treats `.strm` as a playlist and reports the inner HTTP URL as the current file. This build keeps the `.strm` filename as the room identity for 25 seconds after open, so two people can each play their own NAS URL while staying on the same playlist item. Opening a new `.strm` also ignores drifted room time during that window, so playback stays at 0 instead of jumping a few seconds forward.
-- **Sidecar subtitles.** Syncplay starts mpv with a bundled `strm-sidecars.lua` (`--scripts-append`). Matching `.srt` / `.ass` files next to the `.strm` are loaded automatically. You do not need to change the mpv install.
+- **Sidecar subtitles.** Syncplay starts mpv with a bundled `strm-sidecars.lua` (`--scripts-append`). Matching `.srt` / `.ass` files next to the `.strm` are added only after the inner file has loaded. You do not need to change the mpv install.
 - **Server.** No server change. A 1.7.7 server is fine.
-- **About dialog.** Window title is `Syncplay v1.7.7.2 lssb-strm`. Help → About names **lssb** and **白小九日**.
-- **Download.** Use this repo's [Releases](https://github.com/lssb/syncplay/releases). Prefer `Syncplay_1.7.7.2_x64_Portable`. The official site still serves unmodified upstream builds.
+- **About dialog.** Window title is `Syncplay v1.7.7.3 lssb-strm`. Help → About names **lssb** and **白小九日**.
+- **Download.** Use this repo's [Releases](https://github.com/lssb/syncplay/releases). Prefer `Syncplay_1.7.7.3_x64_Portable`. The official site still serves unmodified upstream builds.
 
 ### 本次修改（中文）
 
 mpv 会把 `.strm` 展开成里面的 URL，Syncplay 会把它当成另一个文件，同名字幕也找不到。本 fork 做了两件事：房间里继续用 `.strm` 文件名（打开后 25 秒内完成绑定），启动 mpv 时带上内置脚本，从 `.strm` 所在目录加载同名字幕。打开新 `.strm` 时这段时间也不再用漂移后的房间进度去 seek，避免跳到大约 3 秒。服务端不用改。
 
-Windows 安装包请到本仓库 [Releases](https://github.com/lssb/syncplay/releases) 下载。推荐 64 位便携包 `Syncplay_1.7.7.2_x64_Portable`；也可以用 `Syncplay-1.7.7.2-x64-Setup.exe`。不用去 Actions 里找。
+Windows 安装包请到本仓库 [Releases](https://github.com/lssb/syncplay/releases) 下载。推荐 64 位便携包 `Syncplay_1.7.7.3_x64_Portable`；也可以用 `Syncplay-1.7.7.3-x64-Setup.exe`。不用去 Actions 里找。
 
 ## What does it do
 

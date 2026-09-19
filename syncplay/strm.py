@@ -28,13 +28,15 @@ def extra_open_ignore_time(file_path):
     return 0
 
 
-def decide_sidecar_load(playlist_path, path, last_key):
+def decide_sidecar_load(playlist_path, path, last_key, file_loaded=True):
     """When to sub-add next to a .strm. Must stay in sync with strm-sidecars.lua.
 
-    mpv first opens the .strm itself as a playlist wrapper. sub-add at that
-    moment is discarded when the inner URL starts. Wait until path is the
-    inner media, then load once per (playlist_path, path).
+    mpv first opens the .strm itself as a playlist wrapper. path can become
+    the inner URL before file-loaded; sub-add at that moment is discarded.
+    Wait until the inner media is loaded, then load once per (playlist_path, path).
     """
+    if not file_loaded:
+        return "wait", None
     if not is_strm_path(playlist_path):
         return "wait", None
     if not path or is_strm_path(path):

@@ -12,6 +12,8 @@ local SUB_EXTS = {
 }
 
 local last_loaded_key = nil
+local file_is_loaded = false
+local readdir_retries = 0
 
 local function basename(path)
     if not path then
@@ -62,6 +64,10 @@ local function load_sidecars()
     -- Same rules as syncplay.strm.decide_sidecar_load.
     local playlist_path = mp.get_property("playlist-path")
     local path = mp.get_property("path")
+    if not file_is_loaded then
+        msg.verbose("strm-sidecars: waiting for file-loaded")
+        return
+    end
     if not is_strm(playlist_path) then
         return
     end
@@ -83,8 +89,13 @@ local function load_sidecars()
     local files = utils.readdir(dir, "files")
     if not files then
         msg.warn("strm-sidecars: cannot read " .. dir)
+        if readdir_retries < 3 then
+            readdir_retries = readdir_retries + 1
+            mp.add_timeout(1.0, load_sidecars)
+        end
         return
     end
+    readdir_retries = 0
 
     last_loaded_key = key
 
@@ -103,7 +114,15 @@ local function load_sidecars()
     end
 end
 
-mp.register_event("file-loaded", load_sidecars)
+mp.register_event("start-file", function()
+    file_is_loaded = false
+    last_loaded_key = nil
+    readdir_retries = 0
+end)
+mp.register_event("file-loaded", function()
+    file_is_loaded = true
+    load_sidecars()
+end)
 mp.observe_property("playlist-path", "string", function()
     load_sidecars()
 end)

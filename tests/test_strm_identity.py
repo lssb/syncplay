@@ -130,6 +130,16 @@ class SidecarLoadDecisionTest(unittest.TestCase):
         self.assertEqual(action, "wait")
         self.assertIsNone(key)
 
+    def test_ready_paths_wait_until_file_loaded(self):
+        action, key = decide_sidecar_load(
+            r"Z:\show S06E01.strm",
+            "http://nas/play/show.mkv",
+            None,
+            file_loaded=False,
+        )
+        self.assertEqual(action, "wait")
+        self.assertIsNone(key)
+
 
 class ExtraOpenIgnoreTimeTest(unittest.TestCase):
     def test_strm_uses_resolve_timeout(self):
