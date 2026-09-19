@@ -1,8 +1,8 @@
 import os
 import unittest
 
-from syncplay.constants import STRM_RESOLVE_TIMEOUT
-from syncplay.strm import StrmIdentityTracker, decide_sidecar_load
+from syncplay.constants import STREAM_ADDITIONAL_IGNORE_TIME, STRM_RESOLVE_TIMEOUT
+from syncplay.strm import StrmIdentityTracker, decide_sidecar_load, extra_open_ignore_time
 
 
 class FakeClock:
@@ -129,6 +129,23 @@ class SidecarLoadDecisionTest(unittest.TestCase):
         action, key = decide_sidecar_load(None, "http://nas/a.mkv", None)
         self.assertEqual(action, "wait")
         self.assertIsNone(key)
+
+
+class ExtraOpenIgnoreTimeTest(unittest.TestCase):
+    def test_strm_uses_resolve_timeout(self):
+        self.assertEqual(
+            extra_open_ignore_time(r"Z:\show S06E01.strm"),
+            STRM_RESOLVE_TIMEOUT,
+        )
+
+    def test_http_url_uses_stream_ignore(self):
+        self.assertEqual(
+            extra_open_ignore_time("http://nas/play/show.mkv"),
+            STREAM_ADDITIONAL_IGNORE_TIME,
+        )
+
+    def test_local_video_has_no_extra_ignore(self):
+        self.assertEqual(extra_open_ignore_time(r"D:\videos\show.mkv"), 0)
 
 
 class MpvStartupScriptTest(unittest.TestCase):

@@ -14,6 +14,20 @@ def is_strm_path(file_path):
     return os.path.splitext(path)[1].lower() == ".strm"
 
 
+def extra_open_ignore_time(file_path):
+    """Extra seconds to ignore position sync after opening a slow-to-resolve file.
+
+    Local files need none. HTTP streams use STREAM_ADDITIONAL_IGNORE_TIME.
+    .strm files resolve to a remote URL and need STRM_RESOLVE_TIMEOUT so
+    Syncplay does not seek to the drifted room position after load.
+    """
+    if is_strm_path(file_path):
+        return constants.STRM_RESOLVE_TIMEOUT
+    if utils.isURL(file_path):
+        return constants.STREAM_ADDITIONAL_IGNORE_TIME
+    return 0
+
+
 def decide_sidecar_load(playlist_path, path, last_key):
     """When to sub-add next to a .strm. Must stay in sync with strm-sidecars.lua.
 

@@ -14,7 +14,7 @@ from syncplay.players.basePlayer import BasePlayer
 from syncplay.utils import getRuntimeDir, isURL, findResourcePath
 from syncplay.utils import isMacOS, isWindows, isASCII
 from syncplay.utils import playerPathExists
-from syncplay.strm import add_strm_sidecar_script
+from syncplay.strm import add_strm_sidecar_script, extra_open_ignore_time
 from syncplay.vendor.python_mpv_jsonipc.python_mpv_jsonipc import MPV
 
 class MpvPlayer(BasePlayer):
@@ -406,9 +406,12 @@ class MpvPlayer(BasePlayer):
         self._client.ui.showDebugMessage("openFile, resetPosition=={}".format(resetPosition))
         if resetPosition:
             self.lastResetTime = time.time()
-            if isURL(filePath):
-                self._client.ui.showDebugMessage("Setting additional lastResetTime due to stream")
-                self.lastResetTime += constants.STREAM_ADDITIONAL_IGNORE_TIME
+            extra_ignore = extra_open_ignore_time(filePath)
+            if extra_ignore:
+                self._client.ui.showDebugMessage(
+                    "Setting additional lastResetTime of {}s for {}".format(extra_ignore, filePath)
+                )
+                self.lastResetTime += extra_ignore
         self._loadFile(filePath)
         if self._paused != self._client.getGlobalPaused():
             self._client.ui.showDebugMessage("Want to set paused to {}".format(self._client.getGlobalPaused()))

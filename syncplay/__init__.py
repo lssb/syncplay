@@ -1,4 +1,4 @@
-version = '1.7.7.1'
+version = '1.7.7.2'
 revision = ' lssb-strm'
 milestone = 'Yoitsu'
 release_number = '120'
